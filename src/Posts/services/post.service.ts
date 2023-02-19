@@ -31,8 +31,8 @@ export class PostService {
         await this.postModel.findByIdAndUpdate(id,
             { $set: { ...body } },
             { new: true }
-        ).then(() => {
-            return 'Updated Successfully';
+        ).then((result) => {
+            return result;
         }).catch((err) => {
             console.log(err);
             throw new InternalServerErrorException(err);

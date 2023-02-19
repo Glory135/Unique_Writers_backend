@@ -95,16 +95,31 @@ export class UserService {
 
 
     // update user acct PATCH
-    async updateUserAcct(id: string, body:object){
+    async updateUserAcct(
+        id: string,
+        body: {
+            firstname: string,
+            lastname: string,
+            username: string,
+            displayname: string
+        }) {
         await this.userModel.findByIdAndUpdate(id,
             { $set: { ...body } },
             { new: true }
-        ).then(() => {
-            return 'Updated Successfully';
+        ).then((result) => {
+            return result;
         }).catch((err) => {
             console.log(err);
             throw new InternalServerErrorException(err);
         });
+    }
+
+    // delete user DELETE
+    async deleteUser(id: string) {
+        const result = await this.userModel.deleteOne({ _id: id }).exec();
+        if (result.deletedCount === 0) {
+            throw new NotFoundException('could not find post!!');
+        }
     }
 
 

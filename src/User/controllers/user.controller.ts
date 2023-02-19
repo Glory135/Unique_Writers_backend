@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, Res } from "@nestjs/common/decorators";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res } from "@nestjs/common/decorators";
 import { UserService } from "../services/user.service";
 import { Request, Response } from "express";
 
@@ -34,7 +34,7 @@ export class UserController {
     // verify user GET
     @Get(':id')
     async user(@Req() req: Request, @Param('id') id: string) {
-        // get single user
+        // get  user
         const user = await this.userService.getUser(id);
         // validate user
         const verifiedUser = await this.userService.verifyUser({ req, id: user._id, email: user.email })
@@ -43,8 +43,38 @@ export class UserController {
 
     // update user PATCH
     @Patch(':id')
-    async updateUserAcct(@Param('id') id: string, @Body() body: object){
-        
+    async updateUserAcct(
+        @Req() req: Request,
+        @Param('id') id: string,
+        @Body() body: {
+            firstname: string,
+            lastname: string,
+            username: string,
+            displayname: string
+        }) {
+        // get  user
+        const user = await this.userService.getUser(id);
+        // validate user
+        const verifiedUser = await this.userService.verifyUser({ req, id: user._id, email: user.email })
+        if (verifiedUser) {
+            const result = await this.userService.updateUserAcct(id, body)
+            return result;
+        }
+    }
+
+    // Delete user DELETE
+    @Delete(':id')
+    async deleteUSer(@Param('id') id: string, @Req() req: Request) {
+        // get  user
+        const user = await this.userService.getUser(id);
+        // validate user
+        const verifiedUser = await this.userService.verifyUser({ req, id: user._id, email: user.email })
+        if (verifiedUser) {
+            await this.userService.deleteUser(id);
+            return {
+                msg: 'User deleted successfully!!'
+            }
+        }
     }
 
     // logout user POST

@@ -4,6 +4,6 @@ import { PostModule } from './Posts/post.module';
 import { UserModule } from './User/user.module';
 
 @Module({
-  imports: [PostModule, UserModule, MongooseModule.forRoot('mongodb://localhost:27017')],
+  imports: [PostModule, UserModule, MongooseModule.forRoot(process.env.DATABASE_URL)],
 })
 export class AppModule { }
