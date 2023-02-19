@@ -1,3 +1,6 @@
+## This is the backend of a site for writing stories where writers can express themeselves
+# click <a href="https://github.com/Glory135/Unique_Writters" target="blank">here</a> to go to the frontend repo
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
