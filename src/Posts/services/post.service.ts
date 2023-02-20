@@ -10,7 +10,6 @@ export class PostService {
         @InjectModel('Post') private postModel: Model<Post>,
         @InjectModel('User') private userModel: Model<User>
     ) { }
-
     // creating post
     async createPost(writerId: string, body: object) {
         // get writer info
@@ -22,7 +21,7 @@ export class PostService {
         // generate writer name for author field
         const writersName = `${writer.lastname} ${writer.firstname}`;
         // create new post
-        const newPost = new this.postModel({ id: this.IdIncrease(), writer_id: writerId, author: writersName, ...body })
+        const newPost = new this.postModel({ id: await this.IdIncrease(), writer_id: writerId, author: writersName, ...body })
         const result = await newPost.save()
         return result;
     }
@@ -62,7 +61,9 @@ export class PostService {
             throw new NotFoundException('Not a writer!!')
         }
         // comparing writerid so that only writers can delete their posts
-        if (writer._id !== post.writer_id) {
+        console.log(writer._id.equals(post.writer_id));
+        
+        if (!writer._id.equals(post.writer_id)) {
             throw new UnauthorizedException('Unauthorized user!!');
         }
         const result = await this.postModel.deleteOne({ _id: postId }).exec();
@@ -72,7 +73,7 @@ export class PostService {
     }
 
     // UTILITY FUNCTIONS
-    
+
     // function to increase id automatically without getting duplicate
     private async IdIncrease(): Promise<number> {
         const allPosts = await this.postModel.find();
