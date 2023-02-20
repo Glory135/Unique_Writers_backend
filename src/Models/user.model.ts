@@ -15,7 +15,7 @@ export const UserSchema = new mongoose.Schema({
         type: String,
         unique: true,
     },
-    displayname:{
+    displayname: {
         type: String,
     },
     email: {
@@ -27,7 +27,15 @@ export const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    profilePic:{
+    isWriter: {
+        type: Boolean,
+        required: true
+    },
+    isAdmin: {
+        type: Boolean,
+        required: true
+    },
+    profilePic: {
         type: Object
     }
 },
@@ -42,5 +50,7 @@ export interface User extends mongoose.Document {
     displayname: string,
     email: string,
     password: string,
+    isWriter: boolean,
+    isAdmin: boolean,
     profilePic: object
 }

@@ -38,7 +38,16 @@ export class UserService {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(body.password, salt)
         // create user
-        const newData = new this.userModel({ id: await this.IdIncrease(), firstname: body.firstname, lastname: body.lastname, username: body.username, email: body.email, password: hashedPassword })
+        const newData = new this.userModel({
+            id: await this.IdIncrease(),
+            firstname: body.firstname,
+            lastname: body.lastname,
+            username: body.username,
+            email: body.email,
+            password: hashedPassword,
+            isAdmin: false,
+            isWriter: false
+        })
         const newUser = await newData.save();
         return newUser;
     }
@@ -68,7 +77,7 @@ export class UserService {
 
     // get single user
     async getUser(id: string) {
-        const user = await this.userModel.findById(id);
+        const user = await this.userModel.findById(id).select("-password");;
         if (!user) {
             throw new NotFoundException('user not found!!')
         }
@@ -83,9 +92,7 @@ export class UserService {
             if (!userData) {
                 throw new UnauthorizedException()
             }
-
-            const user = await this.userModel.findOne({ _id: data.id, email: data.email })
-            delete user.password
+            const user = await this.userModel.findOne({ _id: data.id, email: data.email }).select("-password");
             return user;
         } catch (error) {
             console.log(error);

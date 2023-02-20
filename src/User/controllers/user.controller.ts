@@ -23,22 +23,21 @@ export class UserController {
         return user
     }
 
+    // login user
     @Post('login')
     async login(@Body() body: { username: string, password: string }, @Res({ passthrough: true }) res: Response) {
         const user = await this.userService.login({ response: res, ...body })
         if (user) {
-            return { msg: 'success' }
+            return { msg: 'logged in successfilly' }
         }
     }
 
-    // verify user GET
+    // Get single user GET
     @Get(':id')
     async user(@Req() req: Request, @Param('id') id: string) {
         // get  user
         const user = await this.userService.getUser(id);
-        // validate user
-        const verifiedUser = await this.userService.verifyUser({ req, id: user._id, email: user.email })
-        return verifiedUser
+        return user
     }
 
     // update user PATCH

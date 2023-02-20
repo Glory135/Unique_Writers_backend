@@ -39,8 +39,9 @@ export class PostService {
     }
 
     // editting post
-    async updatePost(id: string, body: object) {
-        await this.postModel.findByIdAndUpdate(id,
+    async updatePost(writerId: string, postId: string, body: object) {
+        await this.authorizeWriter(writerId, postId);
+        await this.postModel.findByIdAndUpdate(postId,
             { $set: { ...body } },
             { new: true }
         ).then((result) => {
@@ -52,20 +53,7 @@ export class PostService {
     }
 
     async deletePodt(writerId: string, postId: string) {
-        // get writer info
-        const writer = await this.userModel.findById(writerId);
-        // get post info
-        const post = await this.FindSinglePost(postId);
-        // check if writer exists
-        if (!writer) {
-            throw new NotFoundException('Not a writer!!')
-        }
-        // comparing writerid so that only writers can delete their posts
-        console.log(writer._id.equals(post.writer_id));
-        
-        if (!writer._id.equals(post.writer_id)) {
-            throw new UnauthorizedException('Unauthorized user!!');
-        }
+        await this.authorizeWriter(writerId, postId);
         const result = await this.postModel.deleteOne({ _id: postId }).exec();
         if (result.deletedCount === 0) {
             throw new NotFoundException('could not find post!!');
@@ -73,6 +61,22 @@ export class PostService {
     }
 
     // UTILITY FUNCTIONS
+
+    // function to verify writer to do something on post
+    private async authorizeWriter(writerId: string, postId:string){
+        // get writer info
+        const writer = await this.userModel.findById(writerId);
+        // get post info
+        const post = await this.FindSinglePost(postId);
+        // check if writer exists
+        if (!writer) {
+            throw new NotFoundException('Wriiter acct does not exist!!')
+        }
+        // comparing writerid so that only writers can delete their posts        
+        if (!writer._id.equals(post.writer_id)) {
+            throw new UnauthorizedException('Unauthorized user!!');
+        }
+    }
 
     // function to increase id automatically without getting duplicate
     private async IdIncrease(): Promise<number> {
