@@ -20,6 +20,11 @@ export const PostSchema = new mongoose.Schema({
     poster: {
         type: Object,
         // required: true
+    },
+    writer_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "User",
     }
 },
     { timestamps: true }
@@ -31,4 +36,5 @@ export interface Post extends mongoose.Document {
     author: string,
     story: string,
     poster: object,
+    writer_id: mongoose.ObjectId
 }

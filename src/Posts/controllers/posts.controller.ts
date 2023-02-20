@@ -7,9 +7,9 @@ export class PostController{
     constructor(private readonly postService: PostService){}
 
     // creating post
-    @Post()
-    async createPost(@Body() body: object){
-        const result = await this.postService.createPost(body);
+    @Post(':id')
+    async createPost(@Param('id') writerId: string, @Body() body: object){
+        const result = await this.postService.createPost(writerId, body);
         return result;
     }
 
@@ -35,9 +35,9 @@ export class PostController{
     }
 
     // delete post
-    @Delete(':id')
-    async deletePodt(@Param('id') id: string){
-        await this.postService.deletePodt(id);
+    @Delete(':writerId/:postId')
+    async deletePodt(@Param('writerId') writerId: string, @Param('postId') postId: string){
+        await this.postService.deletePodt(writerId, postId);
         return 'deleted successfully!!';
     }
 }

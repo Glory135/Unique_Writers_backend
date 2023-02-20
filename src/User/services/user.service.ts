@@ -1,7 +1,7 @@
 import { Injectable, Req } from "@nestjs/common/decorators";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { User } from "../user.model";
+import { User } from "../../Models/user.model";
 import * as bcrypt from 'bcrypt';
 import { Request, Response } from "express";
 import { NotFoundException, UnauthorizedException } from "@nestjs/common";
