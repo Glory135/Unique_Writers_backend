@@ -29,12 +29,3 @@ export const PostSchema = new mongoose.Schema({
 },
     { timestamps: true }
 )
-
-export interface Post extends mongoose.Document {
-    id: number,
-    title: string,
-    author: string,
-    story: string,
-    poster: object,
-    writer_id: mongoose.ObjectId
-}

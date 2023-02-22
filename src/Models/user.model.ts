@@ -27,6 +27,9 @@ export const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    refresh_token:{
+        type: String
+    },
     isWriter: {
         type: Boolean,
         required: true
@@ -41,16 +44,3 @@ export const UserSchema = new mongoose.Schema({
 },
     { timestamps: true }
 );
-
-export interface User extends mongoose.Document {
-    id: number,
-    firstname: string,
-    lastname: string,
-    username: string,
-    displayname: string,
-    email: string,
-    password: string,
-    isWriter: boolean,
-    isAdmin: boolean,
-    profilePic: object
-}
