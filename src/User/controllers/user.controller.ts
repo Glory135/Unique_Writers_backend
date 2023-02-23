@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, UsePipes } from "@nestjs/common/decorators";
 import { UserService } from "../services/user.service";
 import { Request, Response } from "express";
-import { UserFromLogin, UserFromReg, UserFromUpdate } from "src/Types";
 import { LoginUser, RegisterUser, UpdateUser } from "src/DTOs";
 import { ValidationPipe } from "@nestjs/common/pipes";
 
@@ -24,6 +23,7 @@ export class UserController {
     // login user
     // public
     @Post('login')
+    @UsePipes(ValidationPipe)
     async login(
         @Body() body: LoginUser,
         @Res({ passthrough: true }) res: Response
@@ -56,6 +56,7 @@ export class UserController {
     // private
     // middleware VerifyUser.Middleware
     @Patch(':id')
+    @UsePipes(ValidationPipe)
     async updateUserAcct(
         @Req() req: Request,
         @Param('id') id: string,

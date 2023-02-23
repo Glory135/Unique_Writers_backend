@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Get, Req } from "@nestjs/common";
-import { Delete, Param, Patch } from "@nestjs/common/decorators";
+import { Controller, Post, Body, Get } from "@nestjs/common";
+import { Delete, Param, Patch, UsePipes } from "@nestjs/common/decorators";
 import { CreatePost } from "src/DTOs";
 import { PostModel } from "src/Types";
 import { PostService } from "../services/post.service";
+import { ValidationPipe } from "@nestjs/common/pipes";
+
 
 @Controller('/post')
 export class PostController {
@@ -12,6 +14,7 @@ export class PostController {
     // private
     // middleware VerifyUser.Middleware
     @Post(':id')
+    @UsePipes(ValidationPipe)
     async createPost(
         @Param('id') userId: string,
         @Body() body: CreatePost,
@@ -41,6 +44,7 @@ export class PostController {
     // private
     // middleware VerifyUser.Middleware
     @Patch(':userId/:postId')
+    @UsePipes(ValidationPipe)
     async updatePost(
         @Param('userId') userId: string,
         @Param('postId') postId: string,

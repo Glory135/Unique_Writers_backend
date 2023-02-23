@@ -59,7 +59,8 @@ export class PostService {
         ).then((result) => {
             return result;
         }).catch((err) => {
-            throw new InternalServerErrorException(err);
+            console.log(err);
+            throw new InternalServerErrorException();
         });
     }
 

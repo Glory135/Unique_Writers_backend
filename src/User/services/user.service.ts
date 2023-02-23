@@ -1,9 +1,9 @@
-import { Injectable, Req } from "@nestjs/common/decorators";
+import { Injectable } from "@nestjs/common/decorators";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import * as bcrypt from 'bcrypt';
 import { Response } from "express";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, InternalServerErrorException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { BadRequestException } from "@nestjs/common/exceptions";
 import { UserModel } from "src/Types";
@@ -48,13 +48,7 @@ export class UserService {
 
         // save new user
         const newUser = await newData.save();
-
-        // generate tokens
-        const tokens = await this.getTokens(newUser._id, newUser.email)
-        // save refresh token to DB
-        await this.saveRtHash(newUser._id, tokens.RefreshToken)
-
-        return tokens;
+        return newUser;
     }
 
     // login user POST
@@ -82,13 +76,13 @@ export class UserService {
 
     // get all users
     async getAllUsers() {
-        const allUsers = await this.userModel.find().select('-password').select("-refresh_token");
+        const allUsers = await this.userModel.find().select('-password');
         return allUsers;
     }
 
     // get single user
     async getUser(id: string) {
-        const user = await this.userModel.findById(id).select("-password").select("-refresh_token");
+        const user = await this.userModel.findById(id).select("-password");
         if (!user) {
             throw new NotFoundException('user not found!!')
         }
@@ -103,7 +97,12 @@ export class UserService {
         await this.userModel.findByIdAndUpdate(id,
             { $set: { ...body } },
             { new: true }
-        ).exec();
+        ).then((result) => {
+            return result;
+        }).catch((err) => {
+            console.log(err);
+            throw new InternalServerErrorException();
+        });
     }
 
     // delete user DELETE
@@ -118,47 +117,8 @@ export class UserService {
 
     // UTILITY FUNCTIONS 
 
-    // function to save hash of refresh token to DB
-    private async saveRtHash(userId: string, refreshToken: string) {
-        const hashedRt = await this.hashData(refreshToken);
-        await this.userModel.findByIdAndUpdate(
-            userId,
-            {
-                $set: { refresh_token: hashedRt },
-            },
-            { new: true }
-        ).exec();
-    }
-
-    // function to generate access and refresh tokens
-    private async getTokens(userId: string, email: string) {
-        const [AccessToken, RefreshToken] = await Promise.all([
-            this.jwtService.signAsync(
-                {
-                    id: userId,
-                    email
-                },
-                {
-                    secret: process.env.JWT_AT_SECRET,
-                    expiresIn: 60 * 15,
-                }
-            ),
-            this.jwtService.signAsync(
-                {
-                    id: userId,
-                    email
-                },
-                {
-                    secret: process.env.JWT_RT_SECRET,
-                    expiresIn: 60 * 60 * 24 * 7,
-                }
-            ),
-        ])
-        return { AccessToken, RefreshToken }
-    }
-
     // function to hash data
-    private async hashData(data) {
+    private async hashData(data: string) {
         const salt = await bcrypt.genSalt(10);
         const hashedData = await bcrypt.hash(data, salt)
         return hashedData
