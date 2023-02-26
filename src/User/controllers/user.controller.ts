@@ -91,13 +91,12 @@ export class UserController {
     // logout user POST
     // private
     // middleware VerifyUser.Middleware
-    @Post('logout')
+    @Post('logout/:id')
     async logout(
-        @Res({ passthrough: true }) res: Response
+        @Res({ passthrough: true }) res: Response,
+        @Param('id') id: string
     ) {
-        // delete tokens from cookies
-        res.clearCookie('jwt-access');
-        res.clearCookie('jwt-refresh');
+        await this.userService.logout(id, res)
         return { msg: 'logged out successfully!!' }
     }
 

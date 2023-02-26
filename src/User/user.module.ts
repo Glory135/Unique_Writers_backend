@@ -34,7 +34,7 @@ export class UserModule implements NestModule {
                     method: RequestMethod.DELETE
                 },
                 {
-                    path: 'user/logout',
+                    path: 'user/logout/:id',
                     method: RequestMethod.POST
                 },
             )

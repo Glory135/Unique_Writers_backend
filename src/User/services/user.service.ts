@@ -82,7 +82,7 @@ export class UserService {
 
     // get single user
     async getUser(id: string) {
-        const user = await this.userModel.findById(id).select("-password");
+        const user = await this.userModel.findById(id).select("-password").select("-refresh_token");
         if (!user) {
             throw new NotFoundException('user not found!!')
         }
@@ -111,6 +111,18 @@ export class UserService {
         if (result.deletedCount === 0) {
             throw new NotFoundException('could not find post!!');
         }
+    }
+
+    // logout user
+    async logout(id: string, res: Response) {
+        // delete tokens from cookies
+        res.clearCookie('jwt-access');
+        res.clearCookie('jwt-refresh');
+        await this.userModel.findByIdAndUpdate(
+            id,
+            { $set: { refresh_token: null } },
+            { new: true }
+        ).exec();
     }
 
 
