@@ -48,6 +48,7 @@ export class UserService {
 
         // save new user
         const newUser = await newData.save();
+
         return newUser;
     }
 
@@ -62,15 +63,14 @@ export class UserService {
         if (!await bcrypt.compare(body.password, user.password)) {
             throw new BadRequestException('Incorrect password!!');
         }
-        // generate jwt token 
-        const jwt = await this.jwtService.signAsync(
-            {
-                id: user._id,
-                email: user.email
-            }
-        )
+
+        // generate tokens
+        const tokens = await this.getTokens(user._id, user.email)
+        // save refresh token to DB
+        await this.saveRtHash(user._id, tokens.RefreshToken)
         // store token as a cookie
-        res.cookie('jwt', jwt, { httpOnly: true })
+        res.cookie('jwt-access', tokens.AccessToken, { httpOnly: true });
+        res.cookie('jwt-refresh', tokens.RefreshToken, { httpOnly: true });
         return user;
     }
 
@@ -116,6 +116,45 @@ export class UserService {
 
 
     // UTILITY FUNCTIONS 
+
+    // function to save hash of refresh token to DB
+    private async saveRtHash(userId: string, refreshToken: string) {
+        const hashedRt = await this.hashData(refreshToken);
+        await this.userModel.findByIdAndUpdate(
+            userId,
+            {
+                $set: { refresh_token: hashedRt },
+            },
+            { new: true }
+        ).exec();
+    }
+
+    // function to generate access and refresh tokens
+    private async getTokens(userId: string, email: string) {
+        const [AccessToken, RefreshToken] = await Promise.all([
+            this.jwtService.signAsync(
+                {
+                    id: userId,
+                    email
+                },
+                {
+                    secret: process.env.JWT_AT_SECRET,
+                    expiresIn: 60,
+                }
+            ),
+            this.jwtService.signAsync(
+                {
+                    id: userId,
+                    email
+                },
+                {
+                    secret: process.env.JWT_RT_SECRET,
+                    expiresIn: 60 * 60 * 24 * 7,
+                }
+            ),
+        ])
+        return { AccessToken, RefreshToken }
+    }
 
     // function to hash data
     private async hashData(data: string) {

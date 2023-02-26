@@ -18,10 +18,7 @@ import { ConfigModule } from "@nestjs/config";
             { name: 'Post', schema: PostSchema },
             { name: 'User', schema: UserSchema }
         ]),
-        JwtModule.register({
-            secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '1d' }
-        }),
+        JwtModule.register({}),
     ],
     controllers: [PostController],
     providers: [PostService]

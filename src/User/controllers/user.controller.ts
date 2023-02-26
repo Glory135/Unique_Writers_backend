@@ -95,8 +95,9 @@ export class UserController {
     async logout(
         @Res({ passthrough: true }) res: Response
     ) {
-        // delete token from cookies
-        res.clearCookie('jwt');
+        // delete tokens from cookies
+        res.clearCookie('jwt-access');
+        res.clearCookie('jwt-refresh');
         return { msg: 'logged out successfully!!' }
     }
 
