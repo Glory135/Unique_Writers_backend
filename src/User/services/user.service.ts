@@ -48,7 +48,6 @@ export class UserService {
 
         // save new user
         const newUser = await newData.save();
-
         return newUser;
     }
 
@@ -76,7 +75,7 @@ export class UserService {
 
     // get all users
     async getAllUsers() {
-        const allUsers = await this.userModel.find().select('-password');
+        const allUsers = await this.userModel.find().select('-password').select("-refresh_token");
         return allUsers;
     }
 
@@ -151,7 +150,7 @@ export class UserService {
                 },
                 {
                     secret: process.env.JWT_AT_SECRET,
-                    expiresIn: 60,
+                    expiresIn: 60 * 60,
                 }
             ),
             this.jwtService.signAsync(

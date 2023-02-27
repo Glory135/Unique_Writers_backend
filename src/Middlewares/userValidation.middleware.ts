@@ -75,7 +75,7 @@ export class UserValidation implements NestMiddleware {
             { id: userData.id, email: userData.email },
             {
                 secret: process.env.JWT_AT_SECRET,
-                expiresIn: 60,
+                expiresIn: 60 * 60,
             }
         )
 
