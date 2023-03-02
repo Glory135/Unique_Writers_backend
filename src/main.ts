@@ -10,6 +10,11 @@ async function bootstrap() {
     origin: 'http://localhost:3000',
     credentials: true
   });
-  await app.listen(process.env.PORT || 4000);
+  const PORT = process.env.PORT || 4000
+  await app.listen(PORT).then(() => {
+    console.log(`App running on port ${PORT}`);
+  }).catch((err) => {
+    console.log(err);
+  })
 }
 bootstrap();

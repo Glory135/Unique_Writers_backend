@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/common";
+import { Injectable, NestMiddleware, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { NextFunction, Request, Response } from "express";
 import { Model } from "mongoose";
@@ -43,8 +43,13 @@ export class UserValidation implements NestMiddleware {
         }
         // use data gotten from verification to get user from DB
         const user = await this.userModel.findOne({ _id: userData.id, email: userData.email }).select("-password").select("-refresh_token");
+
+        // check if user exists
+        if(!user){
+            throw new NotFoundException('user not found!!');
+        }
         // return user
-        req.user = user;
+        req.user = user; 
         next();
     }
 

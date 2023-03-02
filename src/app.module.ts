@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './Models/user.model';
 import { PostModule } from './Posts/post.module';
 import { UserModule } from './User/user.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserModule } from './User/user.module';
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     PostModule,
     UserModule,
-    ],
+    AdminModule,
+  ]
 })
 export class AppModule { }

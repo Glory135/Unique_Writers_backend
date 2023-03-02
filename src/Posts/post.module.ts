@@ -23,20 +23,24 @@ import { ConfigModule } from "@nestjs/config";
     controllers: [PostController],
     providers: [PostService]
 })
-export class PostModule implements NestModule{ 
+export class PostModule implements NestModule {
+    // use middleware on the following paths
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(UserValidation)
             .forRoutes(
+                // create post
                 {
-                    path: 'post/:id',
+                    path: 'post',
                     method: RequestMethod.POST
                 },
+                // update post
                 {
-                    path: 'post/:writerId/:postId',
+                    path: 'post/:postId',
                     method: RequestMethod.PATCH
                 },
+                // delete post
                 {
-                    path: 'post/:writerId/:postId',
+                    path: 'post/:postId',
                     method: RequestMethod.DELETE
                 },
             )

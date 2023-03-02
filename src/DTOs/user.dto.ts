@@ -42,3 +42,13 @@ export class UpdateUser{
 
     displayname: string;
 }
+
+export class ChangePassword{
+    @IsNotEmpty()
+    @MinLength(5)
+    old_password: string;
+
+    @IsNotEmpty()
+    @MinLength(5)
+    new_password: string;
+}

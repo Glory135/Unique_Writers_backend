@@ -6,14 +6,15 @@ import { Response } from "express";
 import { NotFoundException, InternalServerErrorException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { BadRequestException } from "@nestjs/common/exceptions";
-import { UserModel } from "src/Types";
-import { LoginUser, RegisterUser, UpdateUser } from "src/DTOs";
+import { UserModel, WriterApplicationModel } from "src/Types";
+import { ChangePassword, CreateWriterApplication, LoginUser, RegisterUser, UpdateUser } from "src/DTOs";
 
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel('User') private userModel: Model<UserModel>,
+        @InjectModel('WriterApplication') private writerApplicationModel: Model<WriterApplicationModel>,
         private jwtService: JwtService
     ) { }
 
@@ -73,19 +74,41 @@ export class UserService {
         return user;
     }
 
-    // get all users
+    // get all users GET
     async getAllUsers() {
         const allUsers = await this.userModel.find().select('-password').select("-refresh_token");
         return allUsers;
     }
 
-    // get single user
+    // get single user GET
     async getUser(id: string) {
-        const user = await this.userModel.findById(id).select("-password").select("-refresh_token");
+        const user = await this.FindSinglUser(id);
         if (!user) {
             throw new NotFoundException('user not found!!')
         }
         return user
+    }
+
+    // user to writer appication POST
+    async createWriterApplication(body: CreateWriterApplication, userId: string) {
+        // check if user is already a writer
+        if (await this.userIsWriter(userId)) {
+            throw new BadRequestException('user already a writer!!!')
+        }
+        const user = await this.FindSinglUser(userId);
+        const fullname = `${user.lastname} ${user.firstname}`;
+
+        // create application
+        const newApplication = new this.writerApplicationModel({
+            userId: user._id,
+            fullname,
+            username: user.username,
+            message: body.message,
+            status: false,
+        })
+
+        // save new application
+        return await newApplication.save();
     }
 
     // update user acct PATCH
@@ -95,6 +118,31 @@ export class UserService {
     ) {
         await this.userModel.findByIdAndUpdate(id,
             { $set: { ...body } },
+            { new: true }
+        ).then((result) => {
+            return result;
+        }).catch((err) => {
+            console.log(err);
+            throw new InternalServerErrorException();
+        });
+    }
+
+    // update user acct PATCH
+    async changePassword(
+        id: string,
+        body: ChangePassword,
+    ) {
+        // get old password
+        const old_password = (await this.userModel.findById(id)).password;
+        // confirm old password        
+        if (!await bcrypt.compare(body.old_password, old_password)) {
+            throw new BadRequestException('incorrect old password!!!');
+        }
+        // hash new password
+        const new_password = await this.hashData(body.new_password);
+        // update password
+        await this.userModel.findByIdAndUpdate(id,
+            { $set: { password: new_password } },
             { new: true }
         ).then((result) => {
             return result;
@@ -172,6 +220,27 @@ export class UserService {
         const salt = await bcrypt.genSalt(10);
         const hashedData = await bcrypt.hash(data, salt)
         return hashedData
+    }
+
+    // function to check if user is a writer
+    private async userIsWriter(id: string): Promise<boolean> {
+        const user = await this.FindSinglUser(id);
+        return user.isWriter;
+    }
+
+    // function to find single user and handle error 
+    private async FindSinglUser(id: string): Promise<UserModel> {
+        let user: UserModel;
+        try {
+            user = await this.userModel.findById(id).select("-password").select("-refresh_token");
+        } catch (error) {
+            console.log(error);
+            throw new NotFoundException('Something went wrong whie finding user!!');
+        }
+        if (!user) {
+            throw new NotFoundException('could not find user!!');
+        }
+        return user;
     }
 
     // function to automatically increase id without getting duplicate  

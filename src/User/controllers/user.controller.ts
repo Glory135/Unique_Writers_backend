@@ -1,8 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, UsePipes } from "@nestjs/common/decorators";
 import { UserService } from "../services/user.service";
 import { Request, Response } from "express";
-import { LoginUser, RegisterUser, UpdateUser } from "src/DTOs";
+import { LoginUser, RegisterUser, UpdateUser, CreateWriterApplication, ChangePassword } from "src/DTOs";
 import { ValidationPipe } from "@nestjs/common/pipes";
+import { UnauthorizedException } from "@nestjs/common";
 
 @Controller('user')
 export class UserController {
@@ -13,6 +14,7 @@ export class UserController {
     // register user POST
     // public
     @Post('register')
+    // to use the user input validator from class-validator
     @UsePipes(ValidationPipe)
     async registerUser(
         @Body() body: RegisterUser
@@ -23,6 +25,7 @@ export class UserController {
     // login user
     // public
     @Post('login')
+    // to use the user input validator from class-validator
     @UsePipes(ValidationPipe)
     async login(
         @Body() body: LoginUser,
@@ -37,7 +40,7 @@ export class UserController {
     // get all users
     // public
     @Get('all')
-    async grtALlUsers(){
+    async grtALlUsers() {
         // get users
         const users = await this.userService.getAllUsers();
         return users
@@ -52,23 +55,63 @@ export class UserController {
         return user
     }
 
+    // create writer application POST
+    // private
+    // middleware ValidateUser middleware
+    @Post('writer/application')
+    // to use the user input validator from class-validator
+    @UsePipes(ValidationPipe)
+    async createWriterApplication(
+        @Req() req: Request,
+        @Body() body: CreateWriterApplication,
+    ) {
+        const userId = req.user['_id'];
+        return await this.userService.createWriterApplication(body, userId);
+    }
+
     // update user PATCH
     // private
     // middleware VerifyUser.Middleware
     @Patch(':id')
+    // to use the user input validator from class-validator
     @UsePipes(ValidationPipe)
     async updateUserAcct(
         @Req() req: Request,
         @Param('id') id: string,
         @Body() body: UpdateUser
-        ) {
+    ) {
         // get  user
         const user = await this.userService.getUser(id);
-        if (req.user && user) {
+        if (req.user && user && req.user['_id'].equals(user._id)) {
             await this.userService.updateUserAcct(id, body)
             return {
-                msg: 'User updated successfully!!'
+                msg: 'Your account has been updated successfully!!'
             };
+        } else {
+            throw new UnauthorizedException('unauthorised user!!')
+        }
+    }
+
+    // change user password PATCH
+    // private
+    // middleware VerifyUser.Middleware
+    @Post('changePassword/:id')
+    // to use the user input validator from class-validator
+    @UsePipes(ValidationPipe)
+    async changePassword(
+        @Req() req: Request,
+        @Param('id') id: string,
+        @Body() body: ChangePassword
+    ) {
+        // get  user
+        const user = await this.userService.getUser(id);
+        if (req.user && user && req.user['_id'].equals(user._id)) {
+            await this.userService.changePassword(id, body)
+            return {
+                msg: 'Your Password has been changed successfully!!'
+            };
+        } else {
+            throw new UnauthorizedException('unauthorised user!!')
         }
     }
 
@@ -79,15 +122,15 @@ export class UserController {
     async deleteUser(@Param('id') id: string, @Req() req: Request) {
         // get  user
         const user = await this.userService.getUser(id);
-        if (req.user && user) {
+        if (req.user && user && req.user['_id'].equals(user._id)) {
             await this.userService.deleteUser(id);
             return {
-                msg: 'User deleted successfully!!'
+                msg: 'Your account has been deleted successfully!!'
             }
-        }        
+        }
     }
 
-    
+
     // logout user POST
     // private
     // middleware VerifyUser.Middleware
