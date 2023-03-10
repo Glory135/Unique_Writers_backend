@@ -4,7 +4,7 @@ import { PostService } from "./services/post.service";
 import { MongooseModule } from '@nestjs/mongoose';
 import { PostSchema } from "../Models/post.model";
 import { UserSchema } from "../Models/user.model";
-import { UserValidation } from "src/Middlewares/userValidation.middleware";
+import { UserValidationMiddleware } from "src/Middlewares/user-validation/userValidation.middleware";
 import { JwtModule } from "@nestjs/jwt/dist/jwt.module";
 import { ConfigModule } from "@nestjs/config";
 
@@ -26,7 +26,7 @@ import { ConfigModule } from "@nestjs/config";
 export class PostModule implements NestModule {
     // use middleware on the following paths
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(UserValidation)
+        consumer.apply(UserValidationMiddleware)
             .forRoutes(
                 // create post
                 {

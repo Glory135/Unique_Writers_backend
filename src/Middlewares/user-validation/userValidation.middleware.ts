@@ -7,7 +7,7 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class UserValidation implements NestMiddleware {
+export class UserValidationMiddleware implements NestMiddleware {
     constructor(
         @InjectModel('User') private userModel: Model<UserModel>,
         private jwtService: JwtService
@@ -30,7 +30,6 @@ export class UserValidation implements NestMiddleware {
         if (isExpired) {
             // get refresh token and use it to genetate a new acces token
             console.log('expired');
-            
             await this.refGenAcc(decodedToken["id"], decodedToken['email'], refresh_token, res)
         }
         

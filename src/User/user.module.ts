@@ -5,7 +5,7 @@ import { UserController } from "./controllers/user.controller";
 import { UserService } from "./services/user.service";
 import { UserSchema } from "../Models/user.model";
 import { MiddlewareConsumer, NestModule } from "@nestjs/common/interfaces";
-import { UserValidation } from "../Middlewares/userValidation.middleware";
+import { UserValidationMiddleware } from "../Middlewares/user-validation/userValidation.middleware";
 import { RequestMethod } from "@nestjs/common/enums";
 import { ConfigModule } from "@nestjs/config";
 import { WriterApplicationSchema } from "../Models/writerApplication.model";
@@ -28,7 +28,7 @@ import { WriterApplicationSchema } from "../Models/writerApplication.model";
 export class UserModule implements NestModule {
     // use middleware on the following paths
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(UserValidation)
+        consumer.apply(UserValidationMiddleware)
             .forRoutes(
                 // create writer application
                 {
